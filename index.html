@@ -135,6 +135,7 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
     <li>Tap when the screen tells you to. You will feel every hit.</li>
   </ul>
   <div class="warnbox">⚠ Intense flashing lights, loud sound and strong vibration. If you are sensitive to flashing light, turn on reduced flashing.</div>
+  <label class="tog"><input type="checkbox" id="vo" checked> Voice-over narration</label>
   <label class="tog"><input type="checkbox" id="calm"> Reduced flashing</label>
   <button id="test" class="ghostbtn">🔊 TEST SOUND FIRST</button>
   <div id="testMsg" class="small" style="margin:6px 0 14px">Tap to check you can hear the mine.</div>
@@ -387,7 +388,21 @@ let pT=null;function pulse(p,ms){clearInterval(pT);if(!p){vibe(0);return}vibe(p)
 /* ============ HELPERS ============ */
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const cap=$('cap');
-function say(k,t){cap.style.opacity=0;setTimeout(()=>{cap.innerHTML=(k?`<span class="k">${k}</span>`:'')+t;cap.style.opacity=1},350)}
+function say(k,t){cap.style.opacity=0;setTimeout(()=>{cap.innerHTML=(k?`<span class="k">${k}</span>`:'')+t;cap.style.opacity=1},350);if(t)speak(t,k)}
+/* ---------- voice-over: the phone's built-in text-to-speech ---------- */
+let VO=true,voice=null,alertVoice=null;const synth=window.speechSynthesis;
+function pickVoices(){if(!synth)return;const vs=synth.getVoices().filter(v=>/^en/i.test(v.lang));if(!vs.length)return;
+  const pref=['Daniel','Aaron','Arthur','Google UK English Male','Microsoft Guy','Alex','Fred','Google US English','Samantha','Karen'];
+  voice=pref.map(n=>vs.find(v=>v.name.includes(n))).find(Boolean)||vs.find(v=>/en-(US|GB)/i.test(v.lang))||vs[0];
+  alertVoice=['Samantha','Karen','Google US English','Moira','Tessa'].map(n=>vs.find(v=>v.name.includes(n))).find(v=>v&&v!==voice)||voice}
+if(synth){pickVoices();synth.onvoiceschanged=pickVoices}
+function speechText(t){return t.replace(/["“”]/g,'').replace(/(\d+) ppm/g,'$1 parts per million').replace(/\bCO\b/g,'carbon monoxide')
+  .replace(/SpO₂/g,'blood oxygen').replace(/(\d+) m\b/g,'$1 metres').replace(/\bGCR\b/g,'Ground Control Robotics')}
+function duck(on){if(!master)return;try{master.gain.cancelScheduledValues(ac.currentTime);master.gain.setTargetAtTime(on?.45:.9,ac.currentTime,.15)}catch(e){}}
+function speak(t,k){if(!VO||!synth)return;try{synth.cancel();const u=new SpeechSynthesisUtterance(speechText(t));
+  const isAlert=/ALARM|ALERT|ROOF FALL/.test(k||'');u.voice=isAlert?alertVoice:voice;u.rate=isAlert?1.1:1.02;u.pitch=isAlert?1.15:.85;u.volume=1;
+  u.onstart=()=>duck(true);u.onend=u.onerror=()=>duck(false);synth.speak(u)}catch(e){}}
+function primeSpeech(){if(!synth)return;try{synth.cancel();const u=new SpeechSynthesisUtterance(' ');u.volume=0;synth.speak(u)}catch(e){}}
 function scene(no,name,clock){$('title').style.opacity=1;$('sceneNo').textContent=no;$('sceneName').textContent=name;$('clock').textContent=clock}
 function tween(obj,key,to,ms,ease=x=>x){const from=obj[key],t0=performance.now();return new Promise(r=>{(function s(t){const k=Math.min(1,(t-t0)/ms);obj[key]=from+(to-from)*ease(k);k<1?requestAnimationFrame(s):r()})(t0)})}
 const io=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
@@ -593,7 +608,7 @@ async function run(){
   $('title').style.opacity=0;$('gas').style.display='none';$('vit').style.display='none';cap.innerHTML='';aimFollow=false;
   $('pkHR').textContent=Math.round(V.pk);$('lowSP').textContent=Math.round(V.low)+'%';
   photo(null);$('end').style.display='flex';$('scutl').classList.remove('show');
-  setTimeout(()=>{$('scutl').classList.add('show');tone(392,.5,'triangle',.12);tone(587,.7,'triangle',.12,null,.3);tone(784,1.1,'triangle',.12,null,.6)},2200);tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
+  setTimeout(()=>{speak('Ground Control Robotics and Georgia Tech bring you a solution. SCUTL. The first one in.');$('scutl').classList.add('show');tone(392,.5,'triangle',.12);tone(587,.7,'triangle',.12,null,.3);tone(784,1.1,'triangle',.12,null,.6)},2200);tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
 }
 
 /* ---- iPhone audio unlock: play as media so the silent switch does not mute it ---- */
@@ -601,7 +616,7 @@ let silentEl=null;
 function silentWav(){const sr=8000,n=sr/2,b=new ArrayBuffer(44+n),v=new DataView(b);const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
   w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr,true);v.setUint16(32,1,true);v.setUint16(34,8,true);
   w(36,'data');v.setUint32(40,n,true);for(let i=0;i<n;i++)v.setUint8(44+i,128);return URL.createObjectURL(new Blob([b],{type:'audio/wav'}))}
-function unlockAudio(){
+function unlockAudio(){primeSpeech();
   try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
   try{if(!silentEl){silentEl=new Audio(silentWav());silentEl.loop=true;silentEl.setAttribute('playsinline','');silentEl.volume=.01}const pr=silentEl.play();if(pr)pr.catch(()=>{})}catch(e){}
   if(!ac)initAudio();
@@ -634,7 +649,7 @@ function goUnderground(){if(ytLeft)return;ytLeft=true;try{yt&&yt.pauseVideo()}ca
 $('vidGo').addEventListener('click',goUnderground);
 function feelTap(){buzz([180,40,90]);punch(.7,.5);burst(400,.5,.6);const b=$('feel');b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')}
 $('feel').addEventListener('touchstart',e=>{e.preventDefault();feelTap()},{passive:false});$('feel').addEventListener('mousedown',feelTap);
-$('go').addEventListener('click',()=>{CALM=$('calm').checked;unlockAudio();vibe(40);$('intro').style.display='none';ytLeft=false;
+$('go').addEventListener('click',()=>{CALM=$('calm').checked;VO=$('vo').checked;unlockAudio();vibe(40);$('intro').style.display='none';ytLeft=false;
   $('vid').style.display='flex';if(ytReady){try{yt.playVideo()}catch(e){}}});
 $('sound').addEventListener('click',()=>{unlockAudio();setTimeout(()=>{if(ac.state==='running')$('sound').style.display='none'},200)});
 $('again').addEventListener('click',()=>{unlockAudio();$('end').style.display='none';run()});
