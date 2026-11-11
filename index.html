@@ -37,8 +37,30 @@ label.tog input{width:18px;height:18px;accent-color:var(--amber)}
 #gas.alarm{border-color:var(--red);animation:gasA .5s steps(2) infinite}
 @keyframes gasA{50%{background:#5a0a06e6}}
 #gas .o2{margin-top:4px;color:#9a8d7a}
-#hr{position:absolute;right:16px;top:calc(max(16px,env(safe-area-inset-top)) + 34px);text-align:right;font-size:10px;letter-spacing:.1em;color:#ffb3a8;text-shadow:0 0 6px #000;display:none}
-#hr b{font-family:Oswald;font-size:24px;color:#fff;display:block}
+#vit{position:absolute;right:12px;top:calc(max(16px,env(safe-area-inset-top)) + 30px);width:176px;background:#060a0cd9;border:1px solid #2a4a44;border-radius:8px;padding:7px 9px;display:none;font-size:9px;letter-spacing:.1em;color:#8fd9c6}
+#vit .vh{display:flex;justify-content:space-between;align-items:center}
+#vit .dot{width:7px;height:7px;border-radius:50%;background:#3ef0c8;animation:blink 1s infinite;display:inline-block;margin-right:5px}
+@keyframes blink{50%{opacity:.25}}
+#ecg{width:100%;height:34px;display:block;margin:4px 0 3px}
+#vit .vg{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px}
+#vit .vg b{display:block;font-family:Oswald;font-size:19px;color:#fff;font-weight:600;letter-spacing:.02em;line-height:1.05}
+#vit .vg div.bad b{color:#ff6a5a}
+#vit.alarm{border-color:#ff4a3d;box-shadow:0 0 0 1px #ff4a3d,0 0 18px #ff4a3d66}
+#vit.alarm .dot{background:#ff4a3d}
+#vid{display:none;background:#000;padding:22px 18px}
+#vid h2{font-family:Oswald;font-size:30px;color:#fff;margin:6px 0 2px;font-weight:600}
+.vwrap{position:relative;width:100%;aspect-ratio:16/9;background:#111;border-radius:6px;overflow:hidden;margin:14px 0}
+.vwrap iframe,#yt{position:absolute;inset:0;width:100%;height:100%;border:0}
+#feel{background:#c0180f;color:#fff;margin:4px 0 10px;font-size:16px}
+#feel.hit{animation:hit .18s ease-out}
+#vidGo{margin-top:6px}
+#badge{position:absolute;inset:0;z-index:15;display:none;align-items:center;justify-content:center;background:#000d;padding:24px;pointer-events:auto}
+#badge .bx{width:100%;max-width:340px;background:#0b1214;border:1px solid #2a4a44;border-radius:10px;padding:18px}
+#badge h3{font-family:Oswald;font-size:24px;color:#fff;letter-spacing:.06em;margin:4px 0 12px}
+#badge .row{display:flex;justify-content:space-between;font-size:12px;padding:7px 0;border-bottom:1px solid #1d2e2c;color:#cfc3b0}
+#badge .row span:last-child{color:#555}
+#badge .row.ok span:last-child{color:#3ef0c8}
+#badge button{margin-top:16px;background:#3ef0c8;color:#00261d}
 #count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;font-family:Oswald;text-align:center}
 #count .t{font-size:17px;letter-spacing:.32em;color:var(--red);text-shadow:0 0 12px #000}
 #count .n{font-size:140px;font-weight:600;color:#fff;line-height:1;text-shadow:0 0 30px #ff3b00}
@@ -75,7 +97,16 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
 <div id="hud">
   <div id="title"><span><b id="sceneNo">01</b> · <span id="sceneName">THE CHARGE</span></span><span id="clock">22:40</span></div>
   <div id="gas">CO<b id="co">0 ppm</b><div class="o2">O₂ <span id="o2">20.9</span>%</div></div>
-  <div id="hr">HEART RATE<b id="bpm">76</b></div>
+  <div id="vit"><div class="vh"><span><span class="dot"></span>MINER 217 · VITALS</span><span id="vstat">LIVE</span></div>
+    <canvas id="ecg"></canvas>
+    <div class="vg"><div id="vHR">HEART<b id="bpm">76</b></div><div id="vSP">SpO₂<b id="spo2">98%</b></div><div>CORE TEMP<b id="tmp">36.8°</b></div><div>BREATHS/MIN<b id="rsp">14</b></div></div></div>
+  <div id="badge"><div class="bx"><div class="eyebrow" style="color:#3ef0c8">LAMP ROOM · SHIFT CHECK-IN</div><h3>MINER 217</h3>
+    <div class="row" id="b1"><span>Tag board</span><span>…</span></div>
+    <div class="row" id="b2"><span>Cap lamp #217</span><span>…</span></div>
+    <div class="row" id="b3"><span>Self-rescuer</span><span>…</span></div>
+    <div class="row" id="b4"><span>Gas monitor</span><span>…</span></div>
+    <div class="row" id="b5"><span>Vitals band</span><span>…</span></div>
+    <button id="badgeBtn">TAP TO BADGE IN</button></div></div>
   <div id="count"><div class="t">FIRE IN THE HOLE</div><div class="n" id="n">5</div><div class="t">STAY BEHIND THE DOOR</div></div>
   <div id="hint"></div>
   <div id="tap">TAP TO<br>STRIKE<br>FLARE</div>
@@ -85,9 +116,9 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
 </div>
 
 <div id="intro" class="screen">
-  <div class="eyebrow">4D EXPERIENCE · 3 MIN · REAL ARCHIVE PHOTOS</div>
+  <div class="eyebrow">4D EXPERIENCE · 4 MIN · REAL FOOTAGE</div>
   <h1>AFTER<br>THE BLAST</h1>
-  <p class="lead">It starts at a granite quarry outside Atlanta. Then you ride the cage 400 metres underground. You charge the face, survive the blast, then walk back into the dust. This is the most dangerous hour of a miner's shift.</p>
+  <p class="lead">Watch a real mine blast. Then become the miner. Badge in, your vitals go live, and you ride the cage 400 metres underground. You charge the face, survive the blast, then walk back into the dust. This is the most dangerous hour of a miner's shift.</p>
   <ul class="tips">
     <li>Headphones on, volume up</li>
     <li>Silent mode OFF. On iPhone it also mutes the sound.</li>
@@ -100,14 +131,28 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
   <div id="testMsg" class="small" style="margin:6px 0 14px">Tap to check you can hear the mine.</div>
   <button id="go">ENTER THE MINE</button>
   <div id="hap" class="small" style="margin-top:12px"></div>
-  <div id="load" class="small" style="margin-top:4px">Loading archive photos…</div>
+  <div id="load" class="small" style="margin-top:4px">Loading photos…</div>
 </div>
 
+<div id="vid" class="screen">
+  <div class="eyebrow">REAL FOOTAGE · WATCH WITH SOUND</div>
+  <h2>Caval Ridge Mine blast</h2>
+  <div class="small">BHP Mitsubishi Alliance coal mine · Bowen Basin, Queensland, Australia</div>
+  <div class="vwrap"><div id="yt"></div></div>
+  <button id="feel">💥 TAP TO FEEL EACH BLAST</button>
+  <p class="lead" style="font-size:13px">That is a surface blast seen from a safe distance. Next you go underground, where the blast is 300 metres away and there is no open sky.</p>
+  <button id="vidGo">GO UNDERGROUND ›</button>
+  <div class="small" id="ytFail" style="margin-top:8px"></div>
+</div>
 <div id="sound"><div>🔊<br><b>TAP TO TURN ON SOUND</b><br><span>And switch off silent mode</span></div></div>
 <div id="end" class="screen">
   <div class="eyebrow">END OF SHIFT</div>
   <h1>Every blast ends<br>with someone<br>walking back in.</h1>
   <p class="lead">Dust, gas, heat and a roof nobody has checked. You just lived the hour after one blast. Large mines blast up to 15 times a day.</p>
+  <div class="stats" style="margin-bottom:0">
+    <div>YOUR PEAK HEART RATE<b id="pkHR">0</b>Beats per minute</div>
+    <div>YOUR LOWEST SpO₂<b id="lowSP">98%</b>Blood oxygen</div>
+  </div>
   <div class="stats">
     <div>US MINING DEATHS IN 2025<b>33</b>Up from 28 in 2024</div>
     <div>BLASTS PER DAY<b>Up to 15</b>In larger underground mines</div>
@@ -117,7 +162,7 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
   <div class="scutl"><b>What if a robot went in first?</b><p>SCUTL by Ground Control Robotics is 8 inches tall and under 10 lb. It has a 360° 8K camera, thermal imaging and keeps walking if a motor fails. Send it to check the roof and the air before anyone walks back in.</p></div>
   <button id="again">GO DOWN AGAIN</button>
   <div class="src">Concept experience. Dramatized for awareness. SCUTL is marketed today for pest control, construction and agriculture; mining use is proposed.<br>
-  Photos (public domain): USGS Bulletin 426, 1910 · U.S. National Archives, EPA DOCUMERICA, Jack Corn, 1974 · NIOSH. Via Wikimedia Commons.<br>
+  Opening video: Caval Ridge Mine blast, via YouTube. Shaft photo: U.S. National Archives, EPA DOCUMERICA, Jack Corn, 1974 (public domain). Underground photos supplied by the presenter.<br>
   Sources: <a href="https://northamericanmining.com/index.php/2026/01/09/msha-reported-33-fatalities-in-2025/">MSHA 2025 fatalities (North American Mining)</a> ·
   <a href="https://www.msha.gov/sites/default/files/Alerts-Hazards/Informational-Alert.pdf">MSHA focus areas</a> ·
   <a href="https://new.abb.com/news/detail/108967/abb-boliden-and-lkab-complete-successful-testing-of-industry-first-automated-robot-charger-for-increased-safety-in-underground-mines">ABB on blast frequency</a> ·
@@ -192,16 +237,15 @@ addEventListener('resize',resize);resize();
 /* ---------- archive photos (public domain, hotlinked from Wikimedia Commons) ---------- */
 const FP='https://commons.wikimedia.org/wiki/Special:FilePath/';
 const PHOTOS={
-  quarry:{f:'Bulletin_426_Plate_XXV_A_Stone_Mountain_GA.jpg',w:1280,credit:'ARCHIVE PHOTO · GRANITE QUARRY OUTSIDE ATLANTA · USGS 1910'},
   lineup:{f:"MINERS_LINE_UP_TO_GO_INTO_THE_ELEVATOR_SHAFT_AT_THE_VIRGINIA-POCAHONTAS_COAL_COMPANY_MINE_^4_NEAR_RICHLANDS,_VIRGINIA..._-_NARA_-_556338.jpg",w:1280,credit:'ARCHIVE PHOTO · U.S. NATIONAL ARCHIVES / EPA DOCUMERICA 1974'},
-  drill:{f:'Miners_drilling.jpg',w:0,credit:'ARCHIVE PHOTO · NIOSH'},
-  tunnel:{f:'A_ROOF_BOLTING_MACHINE_IS_SHOWN_IN_THE_CENTER_OF_THE_PICTURE_IN_A_NEW_MINE_OF_THE_TENNESSEE_CONSOLIDATED_COAL_COMPANY..._-_NARA_-_556513.jpg',w:1280,credit:'ARCHIVE PHOTO · U.S. NATIONAL ARCHIVES / EPA DOCUMERICA 1974'},
-  bolter:{f:'MINER_LEE_CALDWELL,_ON_A_SELF-PROPELLED_ROOF_BOLTING_MACHINE_IN_A_MINE_OF_THE_TENNESSEE_CONSOLIDATED_COAL_COMPANY..._-_NARA_-_556514.jpg',w:1280,credit:'ARCHIVE PHOTO · U.S. NATIONAL ARCHIVES / EPA DOCUMERICA 1974'}
+  drift:{src:'img/drift.jpg',credit:''},
+  spray:{src:'img/spray.jpg',credit:''},
+  rockfall:{src:'img/rockfall.jpg',credit:''}
 };
 let photosOk=0;
 Object.values(PHOTOS).forEach(p=>{p.img=new Image();p.img.decoding='async';p.img.onload=()=>{p.ok=true;photosOk++;updLoad()};p.img.onerror=()=>{p.ok=false;updLoad()};
-  p.img.src=FP+encodeURIComponent(p.f)+(p.w?'?width='+p.w:'')});
-function updLoad(){const n=Object.values(PHOTOS).filter(p=>p.ok!==undefined).length,t=Object.keys(PHOTOS).length;const el=document.getElementById('load');if(el)el.textContent=n<t?`Loading archive photos… ${n}/${t}`:(photosOk?`${photosOk} of ${t} archive photos ready.`:'Photos unavailable. Using rendered graphics.')}
+  p.img.src=p.src||(FP+encodeURIComponent(p.f)+(p.w?'?width='+p.w:''))});
+function updLoad(){const n=Object.values(PHOTOS).filter(p=>p.ok!==undefined).length,t=Object.keys(PHOTOS).length;const el=document.getElementById('load');if(el)el.textContent=n<t?`Loading photos… ${n}/${t}`:(photosOk?`${photosOk} of ${t} photos ready.`:'Photos unavailable. Using rendered graphics.')}
 const S={photo:null,pz:1,fx:.5,fy:.5,dist:0,faceDist:3,showFace:true,bob:0,walk:0,ambient:.03,haze:.15,shake:0,white:0,ghost:0,
   cap:{on:true,i:1,x:.5,y:.5,flick:0},flood:{i:0},beacon:{i:0,ph:0,col:[255,150,20]},flare:{i:0,d:0,u:.25,v:.75,lit:false},
   blast:{i:0},rescue:{i:0,d:8},strobe:0};
@@ -281,6 +325,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
   if(S.white>.01){ctx.fillStyle=`rgba(255,246,230,${Math.min(1,S.white)})`;ctx.fillRect(0,0,W,H)}
   // vignette
   const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.7)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  tickVitals(dt);drawECG(dt);
   requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
 
@@ -332,7 +377,23 @@ function tween(obj,key,to,ms,ease=x=>x){const from=obj[key],t0=performance.now()
 const io=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
 function countTxt(el,a,b,ms,fmt){const t0=performance.now();return new Promise(r=>{(function s(t){const k=Math.min(1,(t-t0)/ms);el.textContent=fmt(a+(b-a)*k);k<1?requestAnimationFrame(s):r()})(t0)})}
 function hint(t,ms=3500){const h=$('hint');h.textContent=t;h.style.opacity=1;setTimeout(()=>h.style.opacity=0,ms)}
-let bpm=76;function setBpm(v){bpm=v;$('bpm').textContent=Math.round(v)}
+/* ---------- miner vitals: heart, SpO2, core temp, breathing ---------- */
+const V={hr:74,sp:98,tp:36.8,rr:14,tSp:98,tTp:36.8,pk:0,low:100};let bpm=74;
+function setBpm(v){bpm=v}
+function setV(o){if(o.spo2!=null)V.tSp=o.spo2;if(o.temp!=null)V.tTp=o.temp}
+function tickVitals(dt){const k=Math.min(1,dt*1.6);V.hr+=(bpm-V.hr)*k;V.sp+=(V.tSp-V.sp)*dt*.5;V.tp+=(V.tTp-V.tp)*dt*.25;
+  const tr=12+Math.max(0,V.hr-70)*.24;V.rr+=(tr-V.rr)*k;
+  if($('vit').style.display==='block'){V.pk=Math.max(V.pk,V.hr);V.low=Math.min(V.low,V.sp)}
+  $('bpm').textContent=Math.round(V.hr);$('spo2').textContent=Math.round(V.sp)+'%';$('tmp').textContent=V.tp.toFixed(1)+'°';$('rsp').textContent=Math.round(V.rr);
+  const bad=V.hr>140||V.sp<95;$('vHR').classList.toggle('bad',V.hr>140);$('vSP').classList.toggle('bad',V.sp<95);
+  $('vit').classList.toggle('alarm',bad);$('vstat').textContent=bad?'ALERT':'LIVE'}
+/* scrolling ECG trace */
+const ecg=$('ecg'),ex=ecg.getContext('2d');let eph=0,etr=[];
+function ecgShape(p){p=p%1;if(p<.08)return Math.sin(p/.08*Math.PI)*.12;if(p>.16&&p<.19)return -.15;if(p>=.19&&p<.23)return 1;if(p>=.23&&p<.27)return -.3;if(p>.4&&p<.55)return Math.sin((p-.4)/.15*Math.PI)*.22;return 0}
+function drawECG(dt){if($('vit').style.display!=='block')return;const w=ecg.width=ecg.clientWidth*DPR,hh=ecg.height=ecg.clientHeight*DPR;
+  eph+=dt*V.hr/60;etr.push(ecgShape(eph)+(Math.random()-.5)*.03);const max=Math.floor(w/(2*DPR));if(etr.length>max)etr.splice(0,etr.length-max);
+  ex.strokeStyle=$('vit').classList.contains('alarm')?'#ff5a4a':'#3ef0c8';ex.lineWidth=1.6*DPR;ex.beginPath();
+  etr.forEach((v,i)=>{const x=i*2*DPR,y=hh*.62-v*hh*.55;i?ex.lineTo(x,y):ex.moveTo(x,y)});ex.stroke()}
 async function walk(to,ms,stepMs=650){S.walk=to>S.dist?1:-1;const st=setInterval(step,stepMs);
   tween(S,'pz',Math.min(1.9,Math.max(1,S.pz*(to>S.dist?1.3:.8))),ms,io);await tween(S,'dist',to,ms,io);clearInterval(st);S.walk=0}
 function photo(k,fx=.5,fy=.5,pz=1){S.photo=k;S.fx=fx;S.fy=fy;S.pz=pz;$('credit').textContent=k&&PHOTOS[k].ok?PHOTOS[k].credit:''}
@@ -360,35 +421,33 @@ function tapWalk(target,maxMs){return new Promise(r=>{const start=S.dist,span=ta
 async function run(){
   Object.assign(S,{dist:0,faceDist:3,showFace:true,ambient:.03,haze:.15,shake:0,white:0,ghost:0});S.cap.on=true;S.cap.i=1;S.cap.flick=0;S.cap.x=.5;S.cap.y=.5;
   S.flood.i=0;S.beacon.i=0;S.flare.i=0;S.blast.i=0;S.rescue.i=0;dustTarget=60;drawFace(false);setMuffle(20000,.1);
-  $('gas').style.display='none';$('hr').style.display='block';setBpm(76);aimFollow=true;
+  $('gas').style.display='none';$('vit').style.display='block';setBpm(76);aimFollow=true;
 
-  /* 0 · SURFACE: a granite quarry outside Atlanta */
-  scene('00','THE SURFACE','06:10');aimFollow=false;
-  const wind=loop('brown',700,.22,2);
-  photo('quarry',.5,.5,1);S.ambient=1;S.cap.on=false;S.haze=.05;dustTarget=30;
-  tween(S,'pz',1.22,16000);tween(S,'fx',.62,16000);
-  say('OUTSIDE ATLANTA, GEORGIA','Georgia has quarried granite here for more than 100 years. Larger quarries blast rock once a day.');
-  await wait(5500);
-  // distant quarry blast felt from the rim
-  flash(.18);boom(.55);S.shake=10;vibe([500,80,200]);dustTarget=140;
-  say('','You feel a quarry blast through your boots. Then the dust drifts over the rim.');
+  /* 0 · LAMP ROOM: badge in, vitals go live */
+  scene('00','LAMP ROOM','22:05');aimFollow=false;$('vit').style.display='none';
+  photo('lineup',.5,.45,1.05);S.ambient=.85;S.cap.on=false;S.haze=.05;dustTarget=30;
+  const yard=loop('brown',500,.18,2);
+  $('badge').style.display='flex';
+  await new Promise(r=>{let done=false;const go=()=>{if(done)return;done=true;buzz([60,40,60]);beepOk();r()};$('badgeBtn').onclick=go;setTimeout(go,12000)});
+  for(let i=1;i<=5;i++){const row=$('b'+i);row.classList.add('ok');row.lastElementChild.textContent=['IN','ON','OK','CALIBRATED','CONNECTED'][i-1];tone(1200+i*120,.08,'square',.06);await wait(380)}
+  await wait(500);$('badge').style.display='none';
+  $('vit').style.display='block';V.pk=0;V.low=100;setBpm(78);setV({spo2:98,temp:36.8});
+  say('VITALS LIVE','Your heart rate, blood oxygen, core temperature and breathing now stream to the surface control room.');
   await wait(5000);
-  photo('lineup',.5,.45,1.05);tween(S,'pz',1.25,9000);tween(S,'fy',.55,9000);
-  S.ambient=.85;dustTarget=60;
-  say('THE SHAFT','Tonight your shift is underground. You line up for the cage with the rest of the crew.');
-  await wait(5000);
+  tween(S,'pz',1.25,9000);tween(S,'fy',.55,9000);
+  say('THE SHAFT','You line up for the cage with the rest of the night shift. Eight of you.');setBpm(86);
+  await wait(4500);
   say('','Cap lamp on. Self-rescuer on your belt. The gate slams shut.');
   tone(180,.3,'square',.12);tone(90,.5,'triangle',.2);vibe([90,40,220]);
   await wait(2200);
-  // cage descent: daylight drains away
-  wind.stop(1.5);const cage=loop('brown',260,.7,1);pulse([160,90],250);S.shake=4;S.cap.on=true;S.cap.i=.6;
+  yard.stop(1.5);const cage=loop('brown',260,.7,1);pulse([160,90],250);S.shake=4;S.cap.on=true;S.cap.i=.6;setBpm(98);
   const shk=setInterval(()=>{S.shake=Math.max(S.shake,5);if(Math.random()<.3){tone(160+Math.random()*90,.2,'square',.06)}},400);
   say('DESCENT','Ten metres a second. The light from the surface shrinks to nothing. 400 metres down.');
   await tween(S,'ambient',.02,7000);clearInterval(shk);cage.stop(1);pulse(0);tone(90,.5,'square',.2);vibe([300,60,120]);
-  aimFollow=true;S.cap.i=1;
+  aimFollow=true;S.cap.i=1;setBpm(88);setV({temp:37.1});
 
   /* 1 · THE CHARGE */
-  scene('01','THE CHARGE','22:40');photo('drill',.5,.5,1.05);S.ambient=.03;S.haze=.15;
+  scene('01','THE CHARGE','22:40');photo('drift',.5,.55,1.05);S.ambient=.03;S.haze=.15;
   const fan=loop('brown',160,.32,2),hum=loop('brown',60,.25,2);
   S.dist=.8;tween(S.flood,'i',.6,1500);
   say('400 METRES UNDERGROUND','The face is drilled and charged. 52 holes. Each one packed with explosive.');
@@ -403,7 +462,7 @@ async function run(){
   tone(90,.5,'square',.15);burst(500,.4,.6);vibe([120,60,200]);
   say('REFUGE STATION','Steel door shut. Head count: 8 of 8.');
   S.dist=-12;S.faceDist=-12+15;   // face now far away down the drive
-  photo('tunnel',.5,.5,1.05);
+  photo('drift',.5,.5,1.25);
   await wait(4000);
 
   /* 2 · FIRE IN THE HOLE */
@@ -432,7 +491,7 @@ async function run(){
   await wait(1600);braceHide();
 
   /* 4 · DARKNESS & THE FLARE */
-  scene('04','AFTER THE BLAST','22:54');$('hr').style.display='block';
+  scene('04','AFTER THE BLAST','22:54');$('vit').style.display='block';
   S.ambient=.0;say('','Silence. Your ears ring. The power is out. The dust is so thick you cannot see your hand.');
   heart(560);setBpm(132);setMuffle(20000,6);
   const rattle=setInterval(()=>{burst(2400,.1,.08,'white');if(Math.random()<.4)vibe(25)},420);
@@ -442,7 +501,7 @@ async function run(){
   S.cap.i=.95;S.cap.flick=.2;
   say('','Your cap lamp flickers back. It lights a wall of dust two metres deep.');
   $('gas').style.display='block';countTxt($('co'),0,210,5000,v=>Math.round(v)+' ppm');countTxt($('o2'),20.9,19.6,5000,v=>v.toFixed(1));
-  await wait(2500);$('gas').classList.add('alarm');const gasAl=setInterval(()=>{alarmBeep();vibe([40,60,40])},900);
+  await wait(2500);$('gas').classList.add('alarm');setV({spo2:93,temp:37.4});const gasAl=setInterval(()=>{alarmBeep();vibe([40,60,40])},900);
   say('GAS ALARM','Carbon monoxide at 210 ppm. Blast fumes. Do not breathe deep.');
   await wait(3500);
   // strike flare (tap, or auto)
@@ -457,10 +516,13 @@ async function run(){
   await wait(5500);
   say('','The fans restart. Fresh air pushes the fumes away. You wait 30 minutes.');
   fan.set(.4,2);tween(S,'haze',.5,6000);dustTarget=220;countTxt($('co'),210,45,6000,v=>Math.round(v)+' ppm');
-  await wait(6000);$('gas').classList.remove('alarm');clearInterval(gasAl);setBpm(110);heart(640);
+  await wait(6000);$('gas').classList.remove('alarm');setV({spo2:96});clearInterval(gasAl);setBpm(110);heart(640);
 
   /* 5 · RE-ENTRY */
-  scene('05','RE-ENTRY','23:30');photo('bolter',.5,.45,1);drawFace(true);S.faceDist=S.dist+8;tween(S,'haze',.3,3000);dustTarget=160;S.ambient=.035;
+  scene('05','RE-ENTRY','23:30');photo('spray',.45,.5,1.05);drawFace(true);
+  const water=loop('white',2400,.16,1,'bandpass');tween(S,'pz',1.2,7000);const amb0=S.ambient;tween(S,'ambient',.3,1200);S.flood.i=.5;
+  say('','First the crew sprays water down the walls and the muck pile. It knocks the dust out of the air.');
+  await wait(5500);water.stop(1.5);S.flood.i=0;tween(S,'ambient',amb0,800);photo('drift',.5,.55,1);S.faceDist=S.dist+8;tween(S,'haze',.3,3000);dustTarget=160;S.ambient=.035;
   say('SHIFT BOSS','"Go check the roof. Nobody works until you say it is safe."');
   await wait(3500);
   say('','You toss the flare ahead and walk toward the face.');
@@ -487,8 +549,11 @@ async function run(){
   for(let i=0;i<6;i++){S.cap.i=i%2?.8:.05;await wait(70)}S.cap.i=.9;
   heart(430);setBpm(158);clearInterval(groan);
   await wait(1800);braceHide();
-  say('ROOF FALL','A slab the size of a car. It landed two metres in front of you.');
-  await wait(5000);
+  say('ROOF FALL','A slab the size of a car comes down two metres in front of you.');
+  await wait(3500);
+  photo('rockfall',.58,.62,1.15);S.cap.x=.55;S.cap.y=.6;tween(S,'pz',1.0,6000);tween(S,'haze',.55,3000);setV({temp:37.6});
+  say('','The dust thins. Your lamp finds the utility vehicle parked where the crew stood ten minutes ago.');
+  await wait(6000);
 
   /* 6 · GET OUT */
   scene('06','GET OUT','23:41');
@@ -496,10 +561,11 @@ async function run(){
   S.flare.i=0;hiss.stop(.3);clearInterval(crackle);
   await walk(S.dist-3,4500,380);
   // turn around: rescue lights coming toward you
-  flash(.15);S.showFace=false;S.dist=0;photo('tunnel',.5,.5,1);tween(S,'haze',.55,3000);dustTarget=240;
+  flash(.15);S.showFace=false;S.dist=0;photo('drift',.5,.5,1);tween(S,'haze',.55,3000);dustTarget=240;
   const engine=loop('brown',110,.5,2);
   S.rescue.d=10;S.rescue.i=0;tween(S.rescue,'i',.75,1500);tween(S.rescue,'d',2.6,9000,io);
   pulse([200,300],500);
+  setV({spo2:97,temp:37.2});
   say('MINE RESCUE','Floodlights through the dust. The rescue vehicle. Strobes. Voices calling your name.');
   await wait(4500);tone(420,.5,'square',.12);tone(420,.5,'square',.12,null,.7);
   await wait(4500);pulse(0);heart(0);engine.stop(2);
@@ -508,7 +574,8 @@ async function run(){
   await wait(3500);
   await tween(S,'white',1.2,1500);
   fan.stop();hum.stop();live.forEach(h=>h.stop(.5));clearInterval(rattle);
-  $('title').style.opacity=0;$('gas').style.display='none';$('hr').style.display='none';cap.innerHTML='';aimFollow=false;
+  $('title').style.opacity=0;$('gas').style.display='none';$('vit').style.display='none';cap.innerHTML='';aimFollow=false;
+  $('pkHR').textContent=Math.round(V.pk);$('lowSP').textContent=Math.round(V.low)+'%';
   photo(null);$('end').style.display='flex';tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
 }
 
@@ -531,8 +598,20 @@ addEventListener('touchend',revive,{passive:true});addEventListener('click',revi
 /* sound check on the intro screen */
 $('test').addEventListener('click',()=>{unlockAudio();setTimeout(()=>{boom(.8);buzz([300,60,150])},60);
   setTimeout(()=>{$('testMsg').textContent=ac.state==='running'?'Heard a boom? You are set. Nothing? Turn off silent mode and raise the volume.':'Sound is still blocked. Tap Test sound again.'},400)});
-$('go').addEventListener('click',()=>{CALM=$('calm').checked;unlockAudio();vibe(40);$('intro').style.display='none';run();
-  setTimeout(()=>{if(ac.state!=='running')$('sound').style.display='flex'},800)});
+function beepOk(){tone(1568,.1,'square',.07);tone(2093,.16,'square',.07,null,.11)}
+/* ---- opener: real Caval Ridge blast via YouTube ---- */
+let yt=null,ytReady=false,ytLeft=false;
+window.onYouTubeIframeAPIReady=()=>{try{yt=new YT.Player('yt',{videoId:'8mgG4LKac30',playerVars:{playsinline:1,rel:0,modestbranding:1,controls:1},
+  events:{onReady:()=>{ytReady=true},onStateChange:e=>{if(e.data===0)goUnderground()},onError:()=>ytFallback()}})}catch(e){ytFallback()}};
+(function(){const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.onerror=ytFallback;document.head.appendChild(s)})();
+function ytFallback(){$('ytFail').innerHTML='Video could not load here. <a style="color:#ffb340" href="https://www.youtube.com/watch?v=8mgG4LKac30">Watch it on YouTube</a>, then come back.'}
+function goUnderground(){if(ytLeft)return;ytLeft=true;try{yt&&yt.pauseVideo()}catch(e){}unlockAudio();$('vid').style.display='none';run();
+  setTimeout(()=>{if(ac.state!=='running')$('sound').style.display='flex'},800)}
+$('vidGo').addEventListener('click',goUnderground);
+function feelTap(){buzz([180,40,90]);punch(.7,.5);burst(400,.5,.6);const b=$('feel');b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')}
+$('feel').addEventListener('touchstart',e=>{e.preventDefault();feelTap()},{passive:false});$('feel').addEventListener('mousedown',feelTap);
+$('go').addEventListener('click',()=>{CALM=$('calm').checked;unlockAudio();vibe(40);$('intro').style.display='none';ytLeft=false;
+  $('vid').style.display='flex';if(ytReady){try{yt.playVideo()}catch(e){}}});
 $('sound').addEventListener('click',()=>{unlockAudio();setTimeout(()=>{if(ac.state==='running')$('sound').style.display='none'},200)});
 $('again').addEventListener('click',()=>{unlockAudio();$('end').style.display='none';run()});
 </script>
