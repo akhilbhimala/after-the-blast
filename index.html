@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#000000">
-<title>After the Blast: 400 m Underground</title>
+<title>After the Blast: A 4D Experience of Mining Conditions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -83,9 +83,18 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0;max-width:420px}
 .stats div{background:#1a120b;border:1px solid #3a2a1a;border-radius:6px;padding:12px;font-size:10.5px;color:#cbb59a;letter-spacing:.04em;line-height:1.45}
 .stats b{display:block;font-family:Oswald;font-size:30px;color:#fff;letter-spacing:.02em}
-.scutl{border-left:3px solid var(--teal);padding:10px 14px;margin:6px 0 20px;max-width:420px;background:#06221c;border-radius:0 6px 6px 0}
-.scutl b{font-family:Oswald;font-size:20px;color:#fff;display:block;margin-bottom:4px;letter-spacing:.03em}
-.scutl p{font-size:12px;color:#9fd9c9;line-height:1.55}
+.scutl{margin:22px 0 22px;max-width:420px;padding:22px 18px 20px;border-radius:10px;background:radial-gradient(ellipse at 50% 0%,#0f4a3d 0%,#06221c 55%,#03120e 100%);border:1px solid #1d4a3f;text-align:center;opacity:0;transform:translateY(16px);transition:opacity 1.2s,transform 1.2s}
+.scutl.show{opacity:1;transform:none}
+.scutl .by{font-size:11px;letter-spacing:.22em;color:#9fd9c9}
+.scutl .by b{color:#fff;font-weight:600}
+.scutl .name{font-family:Oswald;font-size:64px;font-weight:600;color:#fff;letter-spacing:.08em;line-height:1;margin:10px 0 2px;text-shadow:0 0 28px #3ef0c866}
+.scutl .tag{font-family:Oswald;font-size:24px;color:var(--teal);letter-spacing:.12em;margin-bottom:12px}
+.scutl svg{width:100%;max-width:300px;margin:4px auto 10px;display:block}
+.scutl p{font-size:12.5px;color:#cfe;line-height:1.6;text-align:left}
+.scutl .spec{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
+.scutl .spec span{font-size:10px;letter-spacing:.08em;color:#9fd9c9;border:1px solid #1d4a3f;border-radius:20px;padding:5px 9px}
+.leg{transform-box:fill-box;transform-origin:50% 0;animation:leg .5s ease-in-out infinite}
+@keyframes leg{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(18deg)}}
 .src{font-size:10px;color:#7d6e5c;line-height:1.7;max-width:420px;margin-top:16px}
 .src a{color:#cbb59a}
 </style>
@@ -116,7 +125,7 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
 </div>
 
 <div id="intro" class="screen">
-  <div class="eyebrow">4D EXPERIENCE · 4 MIN · REAL FOOTAGE</div>
+  <div class="eyebrow">A 4D EXPERIENCE OF MINING CONDITIONS AFTER A BLAST · 4 MIN</div>
   <h1>AFTER<br>THE BLAST</h1>
   <p class="lead">Watch a real mine blast. Then become the miner. Badge in, your vitals go live, and you ride the cage 400 metres underground. You charge the face, survive the blast, then walk back into the dust. This is the most dangerous hour of a miner's shift.</p>
   <ul class="tips">
@@ -159,8 +168,15 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
     <div>MSHA FOCUS AREAS<b>4</b>Roof and rib control is one</div>
     <div>PEOPLE WHO MUST GO IN FIRST<b>1</b>Today, always a person</div>
   </div>
-  <div class="scutl"><b>What if a robot went in first?</b><p>SCUTL by Ground Control Robotics is 8 inches tall and under 10 lb. It has a 360° 8K camera, thermal imaging and keeps walking if a motor fails. Send it to check the roof and the air before anyone walks back in.</p></div>
-  <button id="again">GO DOWN AGAIN</button>
+  <div class="scutl" id="scutl">
+    <div class="by"><b>GROUND CONTROL ROBOTICS</b> &amp; <b>GEORGIA TECH</b><br>BRING YOU A SOLUTION</div>
+    <div class="name">SCUTL</div>
+    <div class="tag">THE FIRST ONE IN.</div>
+    <svg id="scutlArt" viewBox="0 0 340 110" aria-label="Illustration of the multilegged SCUTL robot"></svg>
+    <p>After every blast, someone has to walk in first to check the roof, the air and the muck pile. SCUTL can be that someone. It crawls in on many legs while the crew waits under bolted roof and watches the live feed.</p>
+    <div class="spec"><span>8 IN TALL</span><span>UNDER 10 LB</span><span>360° 8K CAMERA</span><span>THERMAL</span><span>KEEPS WALKING IF A MOTOR FAILS</span></div>
+  </div>
+  <button id="again">EXPERIENCE IT AGAIN</button>
   <div class="src">Concept experience. Dramatized for awareness. SCUTL is marketed today for pest control, construction and agriculture; mining use is proposed.<br>
   Opening video: Caval Ridge Mine blast, via YouTube. Shaft photo: U.S. National Archives, EPA DOCUMERICA, Jack Corn, 1974 (public domain). Underground photos supplied by the presenter.<br>
   Sources: <a href="https://northamericanmining.com/index.php/2026/01/09/msha-reported-33-fatalities-in-2025/">MSHA 2025 fatalities (North American Mining)</a> ·
@@ -576,7 +592,8 @@ async function run(){
   fan.stop();hum.stop();live.forEach(h=>h.stop(.5));clearInterval(rattle);
   $('title').style.opacity=0;$('gas').style.display='none';$('vit').style.display='none';cap.innerHTML='';aimFollow=false;
   $('pkHR').textContent=Math.round(V.pk);$('lowSP').textContent=Math.round(V.low)+'%';
-  photo(null);$('end').style.display='flex';tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
+  photo(null);$('end').style.display='flex';$('scutl').classList.remove('show');
+  setTimeout(()=>{$('scutl').classList.add('show');tone(392,.5,'triangle',.12);tone(587,.7,'triangle',.12,null,.3);tone(784,1.1,'triangle',.12,null,.6)},2200);tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
 }
 
 /* ---- iPhone audio unlock: play as media so the silent switch does not mute it ---- */
@@ -598,6 +615,13 @@ addEventListener('touchend',revive,{passive:true});addEventListener('click',revi
 /* sound check on the intro screen */
 $('test').addEventListener('click',()=>{unlockAudio();setTimeout(()=>{boom(.8);buzz([300,60,150])},60);
   setTimeout(()=>{$('testMsg').textContent=ac.state==='running'?'Heard a boom? You are set. Nothing? Turn off silent mode and raise the volume.':'Sound is still blocked. Tap Test sound again.'},400)});
+(function drawScutl(){const s=$('scutlArt');let L='',B='';
+  for(let i=0;i<9;i++){const x=30+i*32,y=58+Math.sin(i*.8)*6;
+    L+=`<line class="leg" style="animation-delay:${i%2?'-0.25s':'0s'}" x1="${x}" y1="${y}" x2="${x-6}" y2="${y+34}" stroke="#ffb340" stroke-width="4" stroke-linecap="round"/>`;
+    L+=`<line class="leg" style="animation-delay:${i%2?'0s':'-0.25s'};opacity:.55" x1="${x+6}" y1="${y}" x2="${x+12}" y2="${y+32}" stroke="#ffb340" stroke-width="4" stroke-linecap="round"/>`;
+    B+=`<rect x="${x-13}" y="${y-16}" width="28" height="22" rx="7" fill="#2a2f34" stroke="#5b636b"/>`;if(i<8)B+=`<rect x="${x+12}" y="${y-8}" width="10" height="6" rx="2" fill="#1a1d20"/>`}
+  const hx=30+8*32+12,hy=58+Math.sin(6.4)*6-6;B+=`<circle cx="${hx}" cy="${hy}" r="9" fill="#111" stroke="#3ef0c8" stroke-width="2"/><circle cx="${hx}" cy="${hy}" r="3" fill="#3ef0c8"/>`;
+  s.innerHTML=L+B})();
 function beepOk(){tone(1568,.1,'square',.07);tone(2093,.16,'square',.07,null,.11)}
 /* ---- opener: real Caval Ridge blast via YouTube ---- */
 let yt=null,ytReady=false,ytLeft=false;
