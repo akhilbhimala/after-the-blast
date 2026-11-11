@@ -31,6 +31,7 @@ label.tog input{width:18px;height:18px;accent-color:var(--amber)}
 #title b{color:var(--amber);font-weight:600}
 #cap{position:absolute;left:20px;right:20px;bottom:max(40px,calc(env(safe-area-inset-bottom) + 28px));font-size:16.5px;line-height:1.55;text-shadow:0 2px 10px #000,0 0 3px #000,0 0 18px #000;min-height:5em;transition:opacity .45s}
 #cap .k{font-size:11px;letter-spacing:.2em;display:block;margin-bottom:6px;color:var(--amber)}
+#credit{position:absolute;right:12px;bottom:max(12px,env(safe-area-inset-bottom));font-size:9px;letter-spacing:.12em;color:#cfc3b0aa;text-shadow:0 0 4px #000;text-align:right}
 #gas{position:absolute;left:16px;top:calc(max(16px,env(safe-area-inset-top)) + 34px);background:#0a0806d9;border:1px solid #4a3a28;border-radius:6px;padding:8px 10px;font-size:10px;letter-spacing:.1em;color:#cfc3b0;display:none;min-width:132px}
 #gas b{font-family:Oswald;font-size:24px;color:#fff;display:block;font-weight:600}
 #gas.alarm{border-color:var(--red);animation:gasA .5s steps(2) infinite}
@@ -80,12 +81,13 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
   <div id="tap">TAP TO<br>STRIKE<br>FLARE</div>
   <div id="brace"><span id="braceTxt">BRACE!</span></div>
   <div id="cap"></div>
+  <div id="credit"></div>
 </div>
 
 <div id="intro" class="screen">
-  <div class="eyebrow">4D EXPERIENCE · 3 MIN</div>
+  <div class="eyebrow">4D EXPERIENCE · 3 MIN · REAL ARCHIVE PHOTOS</div>
   <h1>AFTER<br>THE BLAST</h1>
-  <p class="lead">400 metres underground. You charge the face, survive the blast, then walk back into the dust. This is the most dangerous hour of a miner's shift.</p>
+  <p class="lead">It starts at a granite quarry outside Atlanta. Then you ride the cage 400 metres underground. You charge the face, survive the blast, then walk back into the dust. This is the most dangerous hour of a miner's shift.</p>
   <ul class="tips">
     <li>Headphones on, volume up</li>
     <li>Silent mode OFF. On iPhone it also mutes the sound.</li>
@@ -98,6 +100,7 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
   <div id="testMsg" class="small" style="margin:6px 0 14px">Tap to check you can hear the mine.</div>
   <button id="go">ENTER THE MINE</button>
   <div id="hap" class="small" style="margin-top:12px"></div>
+  <div id="load" class="small" style="margin-top:4px">Loading archive photos…</div>
 </div>
 
 <div id="sound"><div>🔊<br><b>TAP TO TURN ON SOUND</b><br><span>And switch off silent mode</span></div></div>
@@ -114,6 +117,7 @@ button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;fo
   <div class="scutl"><b>What if a robot went in first?</b><p>SCUTL by Ground Control Robotics is 8 inches tall and under 10 lb. It has a 360° 8K camera, thermal imaging and keeps walking if a motor fails. Send it to check the roof and the air before anyone walks back in.</p></div>
   <button id="again">GO DOWN AGAIN</button>
   <div class="src">Concept experience. Dramatized for awareness. SCUTL is marketed today for pest control, construction and agriculture; mining use is proposed.<br>
+  Photos (public domain): USGS Bulletin 426, 1910 · U.S. National Archives, EPA DOCUMERICA, Jack Corn, 1974 · NIOSH. Via Wikimedia Commons.<br>
   Sources: <a href="https://northamericanmining.com/index.php/2026/01/09/msha-reported-33-fatalities-in-2025/">MSHA 2025 fatalities (North American Mining)</a> ·
   <a href="https://www.msha.gov/sites/default/files/Alerts-Hazards/Informational-Alert.pdf">MSHA focus areas</a> ·
   <a href="https://new.abb.com/news/detail/108967/abb-boliden-and-lkab-complete-successful-testing-of-industry-first-automated-robot-charger-for-increased-safety-in-underground-mines">ABB on blast frequency</a> ·
@@ -185,7 +189,20 @@ function drawFace(blasted){faceBlasted=blasted;const c=face.getContext('2d');c.c
 addEventListener('resize',resize);resize();
 
 /* ---------- state ---------- */
-const S={dist:0,faceDist:3,showFace:true,bob:0,walk:0,ambient:.03,haze:.15,shake:0,white:0,ghost:0,
+/* ---------- archive photos (public domain, hotlinked from Wikimedia Commons) ---------- */
+const FP='https://commons.wikimedia.org/wiki/Special:FilePath/';
+const PHOTOS={
+  quarry:{f:'Bulletin_426_Plate_XXV_A_Stone_Mountain_GA.jpg',w:1280,credit:'ARCHIVE PHOTO · GRANITE QUARRY OUTSIDE ATLANTA · USGS 1910'},
+  lineup:{f:"MINERS_LINE_UP_TO_GO_INTO_THE_ELEVATOR_SHAFT_AT_THE_VIRGINIA-POCAHONTAS_COAL_COMPANY_MINE_^4_NEAR_RICHLANDS,_VIRGINIA..._-_NARA_-_556338.jpg",w:1280,credit:'ARCHIVE PHOTO · U.S. NATIONAL ARCHIVES / EPA DOCUMERICA 1974'},
+  drill:{f:'Miners_drilling.jpg',w:0,credit:'ARCHIVE PHOTO · NIOSH'},
+  tunnel:{f:'A_ROOF_BOLTING_MACHINE_IS_SHOWN_IN_THE_CENTER_OF_THE_PICTURE_IN_A_NEW_MINE_OF_THE_TENNESSEE_CONSOLIDATED_COAL_COMPANY..._-_NARA_-_556513.jpg',w:1280,credit:'ARCHIVE PHOTO · U.S. NATIONAL ARCHIVES / EPA DOCUMERICA 1974'},
+  bolter:{f:'MINER_LEE_CALDWELL,_ON_A_SELF-PROPELLED_ROOF_BOLTING_MACHINE_IN_A_MINE_OF_THE_TENNESSEE_CONSOLIDATED_COAL_COMPANY..._-_NARA_-_556514.jpg',w:1280,credit:'ARCHIVE PHOTO · U.S. NATIONAL ARCHIVES / EPA DOCUMERICA 1974'}
+};
+let photosOk=0;
+Object.values(PHOTOS).forEach(p=>{p.img=new Image();p.img.decoding='async';p.img.onload=()=>{p.ok=true;photosOk++;updLoad()};p.img.onerror=()=>{p.ok=false;updLoad()};
+  p.img.src=FP+encodeURIComponent(p.f)+(p.w?'?width='+p.w:'')});
+function updLoad(){const n=Object.values(PHOTOS).filter(p=>p.ok!==undefined).length,t=Object.keys(PHOTOS).length;const el=document.getElementById('load');if(el)el.textContent=n<t?`Loading archive photos… ${n}/${t}`:(photosOk?`${photosOk} of ${t} archive photos ready.`:'Photos unavailable. Using rendered graphics.')}
+const S={photo:null,pz:1,fx:.5,fy:.5,dist:0,faceDist:3,showFace:true,bob:0,walk:0,ambient:.03,haze:.15,shake:0,white:0,ghost:0,
   cap:{on:true,i:1,x:.5,y:.5,flick:0},flood:{i:0},beacon:{i:0,ph:0,col:[255,150,20]},flare:{i:0,d:0,u:.25,v:.75,lit:false},
   blast:{i:0},rescue:{i:0,d:8},strobe:0};
 /* project a point d rings ahead at unit coords */
@@ -224,9 +241,14 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
   // scene
   ctx.save();ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   const sh=S.shake*DPR;ctx.translate((Math.random()-.5)*sh,(Math.random()-.5)*sh+Math.sin(S.bob)*4*DPR*(S.walk?1:0));
+  const P_=S.photo&&PHOTOS[S.photo]&&PHOTOS[S.photo].ok?PHOTOS[S.photo].img:null;
+  if(P_){const iw=P_.naturalWidth,ih=P_.naturalHeight,sc=Math.max(W/iw,H/ih)*1.08*S.pz,dw=iw*sc,dh=ih*sc;
+    let x=W/2-S.fx*dw,y=H/2-S.fy*dh;x=Math.min(0,Math.max(W-dw,x));y=Math.min(0,Math.max(H-dh,y));ctx.drawImage(P_,x,y,dw,dh)}
+  else if(S.photo==='quarry'||S.photo==='lineup'){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#5a6f86');g.addColorStop(.45,'#d9b98f');g.addColorStop(.5,'#6b5a48');g.addColorStop(1,'#2a221b');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}
+  else{
   const fr=((S.dist%1)+1)%1,z=Math.pow(1.25,fr);
-  ctx.save();ctx.translate(VX,VY);ctx.scale(z,z);ctx.translate(-VX,-VY);ctx.drawImage(tex,0,0);ctx.restore();
-  if(S.showFace){const fz=Math.pow(1.25,S.dist-S.faceDist);ctx.save();ctx.translate(VX,VY);ctx.scale(fz,fz);ctx.translate(-VX,-VY);ctx.drawImage(face,0,0);ctx.restore()}
+  ctx.save();ctx.translate(VX,VY);ctx.scale(z,z);ctx.translate(-VX,-VY);ctx.drawImage(tex,0,0);ctx.restore();}
+  if(S.showFace&&!P_){const fz=Math.pow(1.25,S.dist-S.faceDist);ctx.save();ctx.translate(VX,VY);ctx.scale(fz,fz);ctx.translate(-VX,-VY);ctx.drawImage(face,0,0);ctx.restore()}
   // chunks (in scene, get lit)
   for(const c of chunks){c.vy+=.5;c.x+=c.vx;c.y+=c.vy;c.rot+=.1;ctx.fillStyle='#3a2e24';ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);ctx.fillRect(-c.r,-c.r*.7,c.r*2,c.r*1.4);ctx.restore()}
   chunks=chunks.filter(c=>c.y<H+40);
@@ -311,7 +333,9 @@ const io=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
 function countTxt(el,a,b,ms,fmt){const t0=performance.now();return new Promise(r=>{(function s(t){const k=Math.min(1,(t-t0)/ms);el.textContent=fmt(a+(b-a)*k);k<1?requestAnimationFrame(s):r()})(t0)})}
 function hint(t,ms=3500){const h=$('hint');h.textContent=t;h.style.opacity=1;setTimeout(()=>h.style.opacity=0,ms)}
 let bpm=76;function setBpm(v){bpm=v;$('bpm').textContent=Math.round(v)}
-async function walk(to,ms,stepMs=650){S.walk=to>S.dist?1:-1;const st=setInterval(step,stepMs);await tween(S,'dist',to,ms,io);clearInterval(st);S.walk=0}
+async function walk(to,ms,stepMs=650){S.walk=to>S.dist?1:-1;const st=setInterval(step,stepMs);
+  tween(S,'pz',Math.min(1.9,Math.max(1,S.pz*(to>S.dist?1.3:.8))),ms,io);await tween(S,'dist',to,ms,io);clearInterval(st);S.walk=0}
+function photo(k,fx=.5,fy=.5,pz=1){S.photo=k;S.fx=fx;S.fy=fy;S.pz=pz;$('credit').textContent=k&&PHOTOS[k].ok?PHOTOS[k].credit:''}
 function flash(v=1){S.white=Math.max(S.white,CALM?v*.3:v)}
 /* BRACE: hammer the button; every tap is a felt hit */
 let braceOn=false;
@@ -329,6 +353,7 @@ function tapWalk(target,maxMs){return new Promise(r=>{const start=S.dist,span=ta
   stepMode={tap(){const now=performance.now();if(now-lastTap<160)return;lastTap=now;S.dist=Math.min(target,S.dist+span*.07);step();buzz(40);punch(.3,.15);S.walk=1.2;setTimeout(()=>S.walk=.6,300)}};
   (function f(now){const dt=now-prev;prev=now;S.dist=Math.min(target,S.dist+creep*dt);
     if(now-lastTap>1200&&now-lastAuto>900){lastAuto=now;step()}
+    S.pz=1+.5*Math.max(0,(S.dist-start)/span);
     if(S.dist>=target){stepMode=null;S.walk=0;r()}else requestAnimationFrame(f)})(prev)})}
 
 /* ============ STORY ============ */
@@ -337,8 +362,33 @@ async function run(){
   S.flood.i=0;S.beacon.i=0;S.flare.i=0;S.blast.i=0;S.rescue.i=0;dustTarget=60;drawFace(false);setMuffle(20000,.1);
   $('gas').style.display='none';$('hr').style.display='block';setBpm(76);aimFollow=true;
 
+  /* 0 · SURFACE: a granite quarry outside Atlanta */
+  scene('00','THE SURFACE','06:10');aimFollow=false;
+  const wind=loop('brown',700,.22,2);
+  photo('quarry',.5,.5,1);S.ambient=1;S.cap.on=false;S.haze=.05;dustTarget=30;
+  tween(S,'pz',1.22,16000);tween(S,'fx',.62,16000);
+  say('OUTSIDE ATLANTA, GEORGIA','Georgia has quarried granite here for more than 100 years. Larger quarries blast rock once a day.');
+  await wait(5500);
+  // distant quarry blast felt from the rim
+  flash(.18);boom(.55);S.shake=10;vibe([500,80,200]);dustTarget=140;
+  say('','You feel a quarry blast through your boots. Then the dust drifts over the rim.');
+  await wait(5000);
+  photo('lineup',.5,.45,1.05);tween(S,'pz',1.25,9000);tween(S,'fy',.55,9000);
+  S.ambient=.85;dustTarget=60;
+  say('THE SHAFT','Tonight your shift is underground. You line up for the cage with the rest of the crew.');
+  await wait(5000);
+  say('','Cap lamp on. Self-rescuer on your belt. The gate slams shut.');
+  tone(180,.3,'square',.12);tone(90,.5,'triangle',.2);vibe([90,40,220]);
+  await wait(2200);
+  // cage descent: daylight drains away
+  wind.stop(1.5);const cage=loop('brown',260,.7,1);pulse([160,90],250);S.shake=4;S.cap.on=true;S.cap.i=.6;
+  const shk=setInterval(()=>{S.shake=Math.max(S.shake,5);if(Math.random()<.3){tone(160+Math.random()*90,.2,'square',.06)}},400);
+  say('DESCENT','Ten metres a second. The light from the surface shrinks to nothing. 400 metres down.');
+  await tween(S,'ambient',.02,7000);clearInterval(shk);cage.stop(1);pulse(0);tone(90,.5,'square',.2);vibe([300,60,120]);
+  aimFollow=true;S.cap.i=1;
+
   /* 1 · THE CHARGE */
-  scene('01','THE CHARGE','22:40');
+  scene('01','THE CHARGE','22:40');photo('drill',.5,.5,1.05);S.ambient=.03;S.haze=.15;
   const fan=loop('brown',160,.32,2),hum=loop('brown',60,.25,2);
   S.dist=.8;tween(S.flood,'i',.6,1500);
   say('400 METRES UNDERGROUND','The face is drilled and charged. 52 holes. Each one packed with explosive.');
@@ -353,6 +403,7 @@ async function run(){
   tone(90,.5,'square',.15);burst(500,.4,.6);vibe([120,60,200]);
   say('REFUGE STATION','Steel door shut. Head count: 8 of 8.');
   S.dist=-12;S.faceDist=-12+15;   // face now far away down the drive
+  photo('tunnel',.5,.5,1.05);
   await wait(4000);
 
   /* 2 · FIRE IN THE HOLE */
@@ -409,7 +460,7 @@ async function run(){
   await wait(6000);$('gas').classList.remove('alarm');clearInterval(gasAl);setBpm(110);heart(640);
 
   /* 5 · RE-ENTRY */
-  scene('05','RE-ENTRY','23:30');drawFace(true);S.faceDist=S.dist+8;tween(S,'haze',.3,3000);dustTarget=160;S.ambient=.035;
+  scene('05','RE-ENTRY','23:30');photo('bolter',.5,.45,1);drawFace(true);S.faceDist=S.dist+8;tween(S,'haze',.3,3000);dustTarget=160;S.ambient=.035;
   say('SHIFT BOSS','"Go check the roof. Nobody works until you say it is safe."');
   await wait(3500);
   say('','You toss the flare ahead and walk toward the face.');
@@ -445,7 +496,7 @@ async function run(){
   S.flare.i=0;hiss.stop(.3);clearInterval(crackle);
   await walk(S.dist-3,4500,380);
   // turn around: rescue lights coming toward you
-  flash(.15);S.showFace=false;S.dist=0;tween(S,'haze',.55,3000);dustTarget=240;
+  flash(.15);S.showFace=false;S.dist=0;photo('tunnel',.5,.5,1);tween(S,'haze',.55,3000);dustTarget=240;
   const engine=loop('brown',110,.5,2);
   S.rescue.d=10;S.rescue.i=0;tween(S.rescue,'i',.75,1500);tween(S.rescue,'d',2.6,9000,io);
   pulse([200,300],500);
@@ -458,7 +509,7 @@ async function run(){
   await tween(S,'white',1.2,1500);
   fan.stop();hum.stop();live.forEach(h=>h.stop(.5));clearInterval(rattle);
   $('title').style.opacity=0;$('gas').style.display='none';$('hr').style.display='none';cap.innerHTML='';aimFollow=false;
-  $('end').style.display='flex';tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
+  photo(null);$('end').style.display='flex';tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
 }
 
 /* ---- iPhone audio unlock: play as media so the silent switch does not mute it ---- */
