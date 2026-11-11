@@ -49,6 +49,9 @@ label.tog input{width:18px;height:18px;accent-color:var(--amber)}
 #brace small{display:block;font-size:11px;letter-spacing:.2em;margin-top:4px;opacity:.85}
 #brace.hit{animation:hit .18s ease-out}
 @keyframes hit{0%{transform:translate(-50%,-50%) scale(.9);background:#fff8}100%{transform:translate(-50%,-50%) scale(1)}}
+button.ghostbtn{background:transparent;color:#ffb340;border:1px solid #ffb340;font-size:15px;padding:12px}
+#sound{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;text-align:center;background:#000c;font-size:40px;color:#fff;line-height:1.4}
+#sound b{font-family:Oswald;font-size:22px;letter-spacing:.14em}#sound span{font-size:12px;color:#cfc3b0}
 #hapL{position:fixed;left:-200px;top:0;opacity:0;pointer-events:none}
 #hint{position:absolute;top:30%;left:0;right:0;text-align:center;font-size:12px;letter-spacing:.16em;color:var(--amber);text-shadow:0 0 6px #000;opacity:0;transition:opacity .6s}
 /* end */
@@ -85,16 +88,19 @@ label.tog input{width:18px;height:18px;accent-color:var(--amber)}
   <p class="lead">400 metres underground. You charge the face, survive the blast, then walk back into the dust. This is the most dangerous hour of a miner's shift.</p>
   <ul class="tips">
     <li>Headphones on, volume up</li>
-    <li>Silent mode off so your phone vibrates</li>
+    <li>Silent mode OFF. On iPhone it also mutes the sound.</li>
     <li>Brightness up. Hold with both hands.</li>
     <li>Tap when the screen tells you to. You will feel every hit.</li>
   </ul>
   <div class="warnbox">⚠ Intense flashing lights, loud sound and strong vibration. If you are sensitive to flashing light, turn on reduced flashing.</div>
   <label class="tog"><input type="checkbox" id="calm"> Reduced flashing</label>
+  <button id="test" class="ghostbtn">🔊 TEST SOUND FIRST</button>
+  <div id="testMsg" class="small" style="margin:6px 0 14px">Tap to check you can hear the mine.</div>
   <button id="go">ENTER THE MINE</button>
   <div id="hap" class="small" style="margin-top:12px"></div>
 </div>
 
+<div id="sound"><div>🔊<br><b>TAP TO TURN ON SOUND</b><br><span>And switch off silent mode</span></div></div>
 <div id="end" class="screen">
   <div class="eyebrow">END OF SHIFT</div>
   <h1>Every blast ends<br>with someone<br>walking back in.</h1>
@@ -455,8 +461,29 @@ async function run(){
   $('end').style.display='flex';tone(523,.4,'triangle',.12);tone(784,.6,'triangle',.12,null,.25);vibe([60,60,60]);
 }
 
-$('go').addEventListener('click',()=>{CALM=$('calm').checked;if(!ac)initAudio();ac.resume();vibe(40);$('intro').style.display='none';run()});
-$('again').addEventListener('click',()=>{ac.resume();$('end').style.display='none';run()});
+/* ---- iPhone audio unlock: play as media so the silent switch does not mute it ---- */
+let silentEl=null;
+function silentWav(){const sr=8000,n=sr/2,b=new ArrayBuffer(44+n),v=new DataView(b);const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr,true);v.setUint16(32,1,true);v.setUint16(34,8,true);
+  w(36,'data');v.setUint32(40,n,true);for(let i=0;i<n;i++)v.setUint8(44+i,128);return URL.createObjectURL(new Blob([b],{type:'audio/wav'}))}
+function unlockAudio(){
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
+  try{if(!silentEl){silentEl=new Audio(silentWav());silentEl.loop=true;silentEl.setAttribute('playsinline','');silentEl.volume=.01}const pr=silentEl.play();if(pr)pr.catch(()=>{})}catch(e){}
+  if(!ac)initAudio();
+  try{const o=ac.createOscillator(),g=ac.createGain();g.gain.value=0;o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+.05)}catch(e){}
+  if(ac.state!=='running'){const pr=ac.resume();if(pr)pr.catch(()=>{})}
+}
+/* keep sound alive if iOS interrupts it (call, lock screen, app switch) */
+function revive(){if(ac&&ac.state!=='running'){try{ac.resume()}catch(e){}}if(silentEl&&silentEl.paused){silentEl.play().catch(()=>{})}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)revive()});
+addEventListener('touchend',revive,{passive:true});addEventListener('click',revive);
+/* sound check on the intro screen */
+$('test').addEventListener('click',()=>{unlockAudio();setTimeout(()=>{boom(.8);buzz([300,60,150])},60);
+  setTimeout(()=>{$('testMsg').textContent=ac.state==='running'?'Heard a boom? You are set. Nothing? Turn off silent mode and raise the volume.':'Sound is still blocked. Tap Test sound again.'},400)});
+$('go').addEventListener('click',()=>{CALM=$('calm').checked;unlockAudio();vibe(40);$('intro').style.display='none';run();
+  setTimeout(()=>{if(ac.state!=='running')$('sound').style.display='flex'},800)});
+$('sound').addEventListener('click',()=>{unlockAudio();setTimeout(()=>{if(ac.state==='running')$('sound').style.display='none'},200)});
+$('again').addEventListener('click',()=>{unlockAudio();$('end').style.display='none';run()});
 </script>
 </body>
 </html>
